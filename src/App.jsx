@@ -1,11 +1,12 @@
 import React from "react";
+import AppRouter from "./Router/AppRouter";
+import Navigation from "./Router/Navigation";
 
 const App = () => {
   return (
     <div>
-      <h1 className="text-2xl text-blue-600">
-        Welcome to Event Management System
-      </h1>
+      <Navigation />
+      <AppRouter />
     </div>
   );
 };
