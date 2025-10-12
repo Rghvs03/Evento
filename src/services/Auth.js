@@ -5,14 +5,6 @@ export const loginWithGoogle = () => {
   account.createOAuth2Session(OAuthProvider.Google);
 };
 
-// Phone Authentication
-export const sendPhoneCode = (phone) => {
-  return account.createPhoneToken(phone);
-};
-
-export const verifyPhoneCode = (userId, secret) => {
-  return account.createSession(userId, secret);
-};
 
 // Logout
 export const logoutUser = () => {
