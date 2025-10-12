@@ -1,15 +1,8 @@
+import { BoxesIcon } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
-import { account } from "../services/appwrite";
 
 const Home = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    account
-      .get()
-      .then((res) => console.log("Appwrite connected!", res))
-      .catch((err) => console.log("Appwrite connection error:", err));
-  }, []);
 
   return (
     <section className="min-h-[91vh] overflow-hidden flex flex-col items-center justify-center px-6 sm:px-12 py-12 bg-gradient-to-br from-white via-[#f02e65]/10 to-[#a2d9ff]/20">
@@ -28,13 +21,15 @@ const Home = () => {
 
         <button
           className="inline-block px-8 py-3 rounded-full bg-[#f02e65] text-white font-semibold text-lg shadow-md hover:bg-pink-700 transition"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/Auth")}
         >
           Get Started
         </button>
       </div>
       {/* Optional: Add your hero vector image or SVG here */}
       {/* <img src="/src/assets/hero-image.svg" alt="Event Management" className="w-60 mt-10" /> */}
+
+      <BoxesIcon className="mt-10 text-[#f02e65] animate-bounce" size={50} />
     </section>
   );
 };
