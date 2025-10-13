@@ -9,7 +9,12 @@ export const loginWithGoogle = () => {
   );
 };
 
+<<<<<<< HEAD
 // Logout user
+=======
+
+// Logout
+>>>>>>> 8f27a78299589866783ace77ebac27c7dbe658b9
 export const logoutUser = () => {
   return account.deleteSession("current");
 };
