@@ -1,20 +1,15 @@
 import { account, OAuthProvider } from "./appwrite";
 
-// Login with Google
+// Login with Google (with local redirect URIs for development)
 export const loginWithGoogle = () => {
-  account.createOAuth2Session(OAuthProvider.Google);
+  account.createOAuth2Session(
+    OAuthProvider.Google,
+    "http://localhost:5173/auth-redirect", // Success redirect (local)
+    "http://localhost:5173/auth?error=true" // Failure redirect (local)
+  );
 };
 
-// Phone Authentication
-export const sendPhoneCode = (phone) => {
-  return account.createPhoneToken(phone);
-};
-
-export const verifyPhoneCode = (userId, secret) => {
-  return account.createSession(userId, secret);
-};
-
-// Logout
+// Logout user
 export const logoutUser = () => {
   return account.deleteSession("current");
 };

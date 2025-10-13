@@ -5,13 +5,17 @@ import AdminDashboard from "../Pages/AdminDashboard";
 import Event from "../Pages/Event";
 import EventDetails from "../Pages/EventDetails";
 import Auth from "../Pages/Auth";
+import AuthRedirect from "../Pages/AuthRedirect"; // <-- Import the new page
 
 const AppRouter = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/Auth" element={<Auth />} />
-      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth-redirect" element={<AuthRedirect />} />{" "}
+      {/* <-- Added route */}
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />{" "}
+      {/* Optional: dashboard path */}
       <Route path="/events" element={<Event />} />
       <Route path="/events/:id" element={<EventDetails />} />
     </Routes>
