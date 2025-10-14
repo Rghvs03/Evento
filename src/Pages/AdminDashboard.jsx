@@ -1,145 +1,590 @@
-import React from "react";
+import React, { useState } from "react";
 
-const pastEvents = [
-  {
-    id: 1,
-    name: "Tech Symposium",
-    date: "2025-09-18",
-    attendees: 120,
-    banner:
-      "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 2,
-    name: "Cultural Fest",
-    date: "2025-08-10",
-    attendees: 240,
-    banner:
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 3,
-    name: "Sports Meet",
-    date: "2025-07-16",
-    attendees: 89,
-    banner:
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80",
-  },
+// Supported form field types
+const FIELD_TYPES = [
+  { value: "text", label: "Text" },
+  { value: "number", label: "Number" },
+  { value: "email", label: "Email" },
+  { value: "textarea", label: "Paragraph (Textarea)" },
+  { value: "select", label: "Dropdown" },
+  { value: "radio", label: "Radio" },
+  { value: "checkbox", label: "Checkbox" },
+  { value: "file", label: "File Upload" },
 ];
 
-const upcomingEvents = [
-  {
-    id: 10,
-    name: "Hackathon 2025",
-    date: "2025-10-25",
-    status: "Upcoming",
-  },
-  {
-    id: 11,
-    name: "Seminar on AI",
-    date: "2025-11-05",
-    status: "Upcoming",
-  },
-];
+const defaultEventData = {
+  title: "",
+  description: "",
+  date: "",
+  time: "",
+  venue: "",
+  isPaid: false,
+  price: "",
+  banner: null,
+};
 
-const totalAttendees = pastEvents.reduce((sum, ev) => sum + ev.attendees, 0);
+const AdminDashboard = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [eventData, setEventData] = useState(defaultEventData);
+  const [formFields, setFormFields] = useState([]);
+  const [imgPreview, setImgPreview] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
 
-const AdminDashboard = () => (
-  <div className="min-h-screen bg-white text-black flex flex-col px-2 sm:px-6 md:px-14 py-6">
-    {/* Create New Event button */}
-    <div className="w-full flex flex-row justify-center md:justify-between items-center mb-6 gap-4">
-      <h2 className="text-3xl font-bold text-[#f02e65] flex-1">
-        Admin Dashboard
-      </h2>
-      <button className="bg-[#f02e65] hover:bg-pink-800 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg">
-        + Create New Event
-      </button>
-    </div>
+  // Event info input handler
+  function handleEventInput(e) {
+    const { name, value, type, checked, files } = e.target;
+    if (name === "banner") {
+      setEventData({ ...eventData, banner: files[0] });
+      setImgPreview(files[0] ? URL.createObjectURL(files[0]) : null);
+    } else if (type === "checkbox") {
+      setEventData({ ...eventData, [name]: checked });
+    } else {
+      setEventData({ ...eventData, [name]: value });
+    }
+  }
 
-    {/* Horizontal carousel of past events */}
-    <div className="mb-8 w-full overflow-x-auto">
-      <div
-        className="flex gap-6 px-1 pb-2"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+  // Add a custom field to the form
+  function addField() {
+    setFormFields([
+      ...formFields,
+      {
+        id: Date.now(),
+        label: "",
+        type: "text",
+        required: false,
+        options: [],
+      },
+    ]);
+  }
+
+  function removeField(id) {
+    setFormFields(formFields.filter((f) => f.id !== id));
+  }
+
+  function handleFieldChange(idx, key, value) {
+    setFormFields(
+      formFields.map((field, i) =>
+        i === idx ? { ...field, [key]: value } : field
+      )
+    );
+  }
+
+  function handleOptionChange(idx, optionIdx, value) {
+    setFormFields(
+      formFields.map((field, i) =>
+        i === idx
+          ? {
+              ...field,
+              options: field.options.map((opt, oi) =>
+                oi === optionIdx ? value : opt
+              ),
+            }
+          : field
+      )
+    );
+  }
+
+  function addOption(idx) {
+    setFormFields(
+      formFields.map((field, i) =>
+        i === idx ? { ...field, options: [...field.options, ""] } : field
+      )
+    );
+  }
+
+  function removeOption(idx, optionIdx) {
+    setFormFields(
+      formFields.map((field, i) =>
+        i === idx
+          ? {
+              ...field,
+              options: field.options.filter((_, oi) => oi !== optionIdx),
+            }
+          : field
+      )
+    );
+  }
+
+  // Handle event create and edit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const newEvent = {
+      meta: { ...eventData, banner: imgPreview },
+      fields: formFields,
+    };
+    if (editIndex != null) {
+      const copy = [...events];
+      copy[editIndex] = newEvent;
+      setEvents(copy);
+      setEditIndex(null);
+    } else {
+      setEvents([newEvent, ...events]);
+    }
+    setShowModal(false);
+    setEventData(defaultEventData);
+    setFormFields([]);
+    setImgPreview(null);
+  }
+
+  function handleEdit(idx) {
+    const evt = events[idx];
+    setEventData({ ...evt.meta, banner: null });
+    setImgPreview(evt.meta.banner);
+    setFormFields(evt.fields);
+    setEditIndex(idx);
+    setShowModal(true);
+  }
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12">
+      <button
+        onClick={() => {
+          setShowModal(true);
+          setEditIndex(null);
+        }}
+        className="bg-[#f02e65] text-white font-bold text-lg px-10 py-5 rounded-2xl shadow-lg hover:bg-pink-700 transition mb-14"
       >
-        {pastEvents.map((ev) => (
-          <div
-            key={ev.id}
-            className="min-w-[220px] sm:min-w-[300px] bg-white rounded-xl shadow-lg border border-gray-200 flex-shrink-0"
+        Create New Event
+      </button>
+
+      {/* Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            background:
+              "linear-gradient(135deg, #ffffff, #fce4ec, #f8bbd0, #f02e65)",
+            backgroundSize: "300% 300%",
+            animation: "gradientMove 8s ease infinite",
+          }}
+        >
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-2xl border-2 border-[#f02e65] shadow-2xl w-full max-w-2xl p-8 overflow-y-auto max-h-[92vh] relative"
           >
-            <img
-              src={ev.banner}
-              alt={ev.name}
-              className="w-full h-28 object-cover rounded-t-xl"
-              loading="lazy"
-            />
-            <div className="p-4">
-              <div className="font-bold text-[#f02e65] text-lg mb-2">
-                {ev.name}
+            <h2 className="text-2xl font-bold mb-4 text-[#f02e65]">
+              {editIndex != null ? "Edit Event" : "Create New Event"}
+            </h2>
+            {/* Event meta fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="font-semibold text-sm">Title*</label>
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Event Title"
+                  required
+                  value={eventData.title}
+                  onChange={handleEventInput}
+                  className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] mt-1 w-full px-3 py-2  "
+                />
               </div>
-              <div className="text-xs text-gray-600 mb-1">Date: {ev.date}</div>
-              <div className="text-xs text-black font-semibold mb-2">
-                Attendees: {ev.attendees}
+              <div>
+                <label className="font-semibold text-sm">Date*</label>
+                <input
+                  type="date"
+                  name="date"
+                  required
+                  value={eventData.date}
+                  onChange={handleEventInput}
+                  className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] mt-1 w-full px-3 py-2"
+                />
               </div>
-              <button className="text-xs font-semibold text-[#f02e65] hover:underline transition">
-                View Users
+              <div>
+                <label className="font-semibold text-sm">Venue*</label>
+                <input
+                  type="text"
+                  name="venue"
+                  placeholder="Event Venue"
+                  required
+                  value={eventData.venue}
+                  onChange={handleEventInput}
+                  className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] mt-1 w-full px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-sm">Event Time*</label>
+                <input
+                  type="text"
+                  name="time"
+                  required
+                  value={eventData.time}
+                  onChange={handleEventInput}
+                  placeholder="e.g. 9:00 AM – 6:00 PM"
+                  className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] mt-1 w-full px-3 py-2"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-sm">Banner Image</label>
+                <input
+                  type="file"
+                  name="banner"
+                  accept="image/*"
+                  onChange={handleEventInput}
+                  className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] mt-1 w-40 px-2 py-2"
+                />
+                {/* {imgPreview && (
+                  <img
+                    src={imgPreview}
+                    className="mt-2 rounded max-h-24 border"
+                    alt="Event Banner Preview"
+                  />
+                )} */}
+              </div>
+              <div>
+                <label className="font-semibold text-sm">
+                  Is This Event Paid?
+                </label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="isPaid"
+                      checked={eventData.isPaid}
+                      onChange={handleEventInput}
+                      className="mr-2"
+                    />
+                    Paid Event
+                  </label>
+                  {eventData.isPaid && (
+                    <input
+                      type="number"
+                      name="price"
+                      min="0"
+                      value={eventData.price}
+                      onChange={handleEventInput}
+                      placeholder="Price (₹)"
+                      className="border-2 border-[#f02e65] outline-none ml-2 px-3 rounded-xl w-50"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="font-semibold text-sm">
+                Detailed Description*
+              </label>
+              <textarea
+                name="description"
+                placeholder="Provide Detailed Description of the Event"
+                required
+                value={eventData.description}
+                onChange={handleEventInput}
+                rows={2}
+                className="border-2 border-[#f02e65] outline-none rounded-xl focus-within:bg-[#ffebf1] w-full mt-1 px-3 py-2 resize-y"
+              />
+            </div>
+            {/* Dynamic form builder for registration fields */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-md text-[#f02e65]">
+                  Custom Registration Fields
+                </h3>
+                <button
+                  type="button"
+                  onClick={addField}
+                  className="bg-[#f02e65] text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-pink-700"
+                >
+                  Add Field
+                </button>
+              </div>
+              {formFields.length === 0 && (
+                <div className="text-gray-700 mb-3">
+                  No custom fields yet. Click "Add Field"!
+                </div>
+              )}
+              <div className="space-y-4 border-2 border-[#f02e65] outline-none rounded-2xl">
+                {formFields.map((field, i) => (
+                  <div key={field.id} className="p-3">
+                    <div className="flex gap-3 flex-wrap">
+                      <input
+                        type="text"
+                        value={field.label}
+                        onChange={(e) =>
+                          handleFieldChange(i, "label", e.target.value)
+                        }
+                        placeholder="Field Label (e.g. Full Name)"
+                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl flex-grow"
+                        required
+                      />
+                      <select
+                        value={field.type}
+                        onChange={(e) =>
+                          handleFieldChange(i, "type", e.target.value)
+                        }
+                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl"
+                      >
+                        {FIELD_TYPES.map((ft) => (
+                          <option key={ft.value} value={ft.value}>
+                            {ft.label}
+                          </option>
+                        ))}
+                      </select>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={field.required}
+                          onChange={(e) =>
+                            handleFieldChange(i, "required", e.target.checked)
+                          }
+                          className="mr-2"
+                        />
+                        Required
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => removeField(field.id)}
+                        className="bg-red-100 text-red-700 rounded px-2 py-1 font-bold text-sm hover:bg-red-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {["select", "radio", "checkbox"].includes(field.type) && (
+                      <div className="mt-2">
+                        <div className="font-medium mb-1">Options:</div>
+                        {field.options.map((opt, oi) => (
+                          <div key={oi} className="flex gap-2 mb-1">
+                            <input
+                              type="text"
+                              value={opt}
+                              onChange={(e) =>
+                                handleOptionChange(i, oi, e.target.value)
+                              }
+                              placeholder={`Option ${oi + 1}`}
+                              className="border px-2 py-1 rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeOption(i, oi)}
+                              className="text-red-600 text-xs"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addOption(i)}
+                          className="bg-[#f02e65] text-white px-2 py-1 rounded font-bold text-xs mt-1 hover:bg-pink-700"
+                        >
+                          Add Option
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Preview custom fields */}
+            {formFields.length > 0 && (
+              <div className="mb-6 border-t pt-4">
+                <h4 className="font-bold text-gray-600 mb-3">
+                  Registration Form Preview
+                </h4>
+                <form className="space-y-3">
+                  {formFields.map((field) => (
+                    <div key={field.id}>
+                      <label className="block font-medium mb-1">
+                        {field.label}{" "}
+                        {field.required && (
+                          <span className="text-red-500">*</span>
+                        )}
+                      </label>
+                      {field.type === "text" && (
+                        <input
+                          type="text"
+                          disabled
+                          placeholder={field.label}
+                          className="border-2 border-[#f02e65] px-2 py-1 rounded-xl w-full"
+                        />
+                      )}
+                      {field.type === "number" && (
+                        <input
+                          type="number"
+                          disabled
+                          placeholder={field.label}
+                          className="border px-2 py-1 rounded w-full"
+                        />
+                      )}
+                      {field.type === "email" && (
+                        <input
+                          type="email"
+                          disabled
+                          placeholder={field.label}
+                          className="border px-2 py-1 rounded w-full"
+                        />
+                      )}
+                      {field.type === "textarea" && (
+                        <textarea
+                          disabled
+                          placeholder={field.label}
+                          className="border px-2 py-1 rounded w-full"
+                          rows={2}
+                        ></textarea>
+                      )}
+                      {field.type === "file" && (
+                        <input
+                          type="file"
+                          disabled
+                          className="border px-2 py-1 rounded w-full"
+                        />
+                      )}
+                      {["select", "radio", "checkbox"].includes(field.type) &&
+                        field.options.length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {field.type === "select" && (
+                              <select
+                                disabled
+                                className="border px-2 py-1 rounded"
+                              >
+                                {field.options.map((opt, i) => (
+                                  <option key={i}>{opt}</option>
+                                ))}
+                              </select>
+                            )}
+                            {field.type === "radio" &&
+                              field.options.map((opt, i) => (
+                                <label className="mr-3" key={i}>
+                                  <input type="radio" disabled /> {opt}
+                                </label>
+                              ))}
+                            {field.type === "checkbox" &&
+                              field.options.map((opt, i) => (
+                                <label className="mr-3" key={i}>
+                                  <input type="checkbox" disabled /> {opt}
+                                </label>
+                              ))}
+                          </div>
+                        )}
+                    </div>
+                  ))}
+                </form>
+              </div>
+            )}
+            <div className="flex gap-4 justify-end mt-4">
+              <button
+                type="submit"
+                className="bg-[#f02e65] text-white px-6 py-3 rounded-xl font-bold hover:bg-pink-700 transition"
+              >
+                {editIndex !== null ? "Save Changes" : "Create Event"}
+              </button>
+              <button
+                type="button"
+                className="bg-gray-100 text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200"
+                onClick={() => {
+                  setShowModal(false);
+                  setEventData(defaultEventData);
+                  setFormFields([]);
+                  setImgPreview(null);
+                  setEditIndex(null);
+                }}
+              >
+                Cancel
               </button>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Stats Row */}
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 max-w-2xl mx-auto">
-      <div className="bg-[#f02e65] text-white rounded-xl p-6 text-center shadow font-bold">
-        <div className="mb-1">Total Events</div>
-        <div className="text-2xl">
-          {pastEvents.length + upcomingEvents.length}
+          </form>
         </div>
-      </div>
-      <div className="bg-black text-white rounded-xl p-6 text-center shadow font-bold">
-        <div className="mb-1">Total Attendees</div>
-        <div className="text-2xl">{totalAttendees}</div>
-      </div>
-      <div className="bg-[#f02e65] text-white rounded-xl p-6 text-center shadow font-bold hidden sm:block">
-        <div className="mb-1">Upcoming Events</div>
-        <div className="text-2xl">{upcomingEvents.length}</div>
-      </div>
-    </div>
+      )}
 
-    {/* Events table */}
-    <div className="bg-white rounded-xl shadow-xl p-6 w-full overflow-auto">
-      <h3 className="text-xl font-bold text-[#f02e65] mb-4">Upcoming Events</h3>
-      <table className="w-full text-center border-separate border-spacing-y-1">
-        <thead>
-          <tr>
-            <th className="py-2">Event Name</th>
-            <th className="py-2">Date</th>
-            <th className="py-2">Status</th>
-            <th className="py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {upcomingEvents.map((ev) => (
-            <tr key={ev.id} className="bg-gray-50 rounded-xl">
-              <td className="px-2 py-2 font-semibold">{ev.name}</td>
-              <td className="px-2 py-2">{ev.date}</td>
-              <td className="px-2 py-2 text-green-700">{ev.status}</td>
-              <td className="px-2 py-2">
-                <button className="text-blue-600 font-medium hover:underline mr-3">
-                  Edit
-                </button>
-                <button className="text-red-600 font-medium hover:underline">
-                  Delete
-                </button>
-              </td>
-            </tr>
+      {/* List of created events */}
+      <div className="mt-10 w-full max-w-7xl px-2 sm:px-8">
+        {events.length > 0 && (
+          <h2 className="text-4xl font-semibold mb-7 text-[#f02e65] px-1 sm:px-6">
+            Your Created Events
+          </h2>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {events.map((evt, i) => (
+            <div
+              key={i}
+              className="
+          bg-white rounded-2xl border-2 border-[#f02e65]
+          shadow-xl flex flex-col min-h-[470px] max-h-[470px]
+          overflow-hidden transition hover:shadow-2xl duration-200
+        "
+            >
+              <div className="w-full aspect-[3/2] bg-gray-100 overflow-hidden">
+                {evt.meta.banner ? (
+                  <img
+                    src={evt.meta.banner}
+                    alt={evt.meta.title}
+                    className="w-full h-full object-cover object-center rounded-t-2xl"
+                    draggable="false"
+                  />
+                ) : (
+                  <div className="text-gray-300 text-lg flex items-center justify-center h-full">
+                    No Banner
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 flex flex-col justify-between px-5 py-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-lg font-extrabold text-[#f02e65] truncate">
+                      {evt.meta.title}
+                    </h3>
+                    <button
+                      onClick={() => handleEdit(i)}
+                      className="bg-gray-100 hover:bg-pink-100 text-[#f02e65] font-semibold px-4 py-1 rounded-lg border border-[#f02e65]"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  <div className="text-gray-600 text-sm mb-1 truncate">
+                    {evt.meta.date} | {evt.meta.time} @ {evt.meta.venue}
+                  </div>
+                  <div className="text-gray-700 text-sm mb-2 line-clamp-2">
+                    {evt.meta.description}
+                  </div>
+                  <div className="mb-2">
+                    <span
+                      className={`inline-block px-3 py-1 text-xs rounded-full ${
+                        evt.meta.isPaid
+                          ? "bg-pink-100 text-[#f02e65]"
+                          : "bg-gray-200 text-gray-800"
+                      }`}
+                    >
+                      {evt.meta.isPaid ? `Paid (₹${evt.meta.price})` : "Free"}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-lg mt-1 px-3 pt-2 pb-1">
+                  <div className="font-semibold text-black mb-1 text-sm">
+                    Registration Fields:
+                  </div>
+                  <ul className="list-disc ml-4 mt-1 max-h-[54px] overflow-y-auto">
+                    {evt.fields.length === 0 ? (
+                      <li className="text-gray-400 text-xs">
+                        No custom fields
+                      </li>
+                    ) : (
+                      evt.fields.map((field) => (
+                        <li
+                          key={field.id}
+                          className="capitalize truncate text-xs leading-tight"
+                        >
+                          {field.label}
+                          <span className="text-[10px] text-gray-400 ml-1">
+                            ({field.type})
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+        {events.length === 0 && (
+          <div className="text-gray-700 text-lg text-center py-12">
+            No events created yet. Click 'Create New Event' above!
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AdminDashboard;
