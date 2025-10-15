@@ -12,10 +12,10 @@ const AppRouter = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/auth-redirect" element={<AuthRedirect />} />{" "}
-      {/* <-- Added route */}
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />{" "}
-      {/* Optional: dashboard path */}
+      <Route path="/auth-redirect" element={<AuthRedirect />} />
+
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
       <Route path="/events" element={<Event />} />
       <Route path="/events/:id" element={<EventDetails />} />
     </Routes>
