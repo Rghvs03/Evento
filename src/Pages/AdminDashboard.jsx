@@ -294,10 +294,10 @@ const AdminDashboard = () => {
                   No custom fields yet. Click "Add Field"!
                 </div>
               )}
-              <div className="space-y-4 border-2 border-[#f02e65] outline-none rounded-2xl">
+              <div className="space-y-4 border-2 border-[#f02e65] outline-none rounded-2xl p-3">
                 {formFields.map((field, i) => (
-                  <div key={field.id} className="p-3">
-                    <div className="flex gap-3 flex-wrap">
+                  <div key={field.id} className="p-2 bg-[#fff8fa] rounded-xl">
+                    <div className="flex flex-wrap gap-3 w-full">
                       <input
                         type="text"
                         value={field.label}
@@ -305,7 +305,7 @@ const AdminDashboard = () => {
                           handleFieldChange(i, "label", e.target.value)
                         }
                         placeholder="Field Label (e.g. Full Name)"
-                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl flex-grow"
+                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl flex-[2_1_180px] min-w-[130px] w-full sm:w-auto"
                         required
                       />
                       <select
@@ -313,7 +313,7 @@ const AdminDashboard = () => {
                         onChange={(e) =>
                           handleFieldChange(i, "type", e.target.value)
                         }
-                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl"
+                        className="border-2 border-[#f02e65] outline-none px-3 py-2 rounded-xl flex-[1_1_120px] min-w-[90px] w-full sm:w-auto"
                       >
                         {FIELD_TYPES.map((ft) => (
                           <option key={ft.value} value={ft.value}>
@@ -344,7 +344,7 @@ const AdminDashboard = () => {
                       <div className="mt-2">
                         <div className="font-medium mb-1">Options:</div>
                         {field.options.map((opt, oi) => (
-                          <div key={oi} className="flex gap-2 mb-1">
+                          <div key={oi} className="flex gap-2 mb-1 flex-wrap">
                             <input
                               type="text"
                               value={opt}
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
                                 handleOptionChange(i, oi, e.target.value)
                               }
                               placeholder={`Option ${oi + 1}`}
-                              className="border px-2 py-1 rounded"
+                              className="border px-2 py-1 rounded flex-1 min-w-[90px]"
                             />
                             <button
                               type="button"
@@ -376,6 +376,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
+
             {/* Preview custom fields */}
             {formFields.length > 0 && (
               <div className="mb-6 border-t pt-4">
