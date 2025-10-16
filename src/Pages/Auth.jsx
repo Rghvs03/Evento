@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  loginWithGoogle,
-  logoutUser,
-  getUser,
-  registerWithEmail,
-  loginWithEmail,
-} from "../services/Auth";
+import { loginWithGoogle, logoutUser, getUser } from "../services/Auth";
 import { Boxes } from "lucide-react";
-import { RiGoogleFill } from "@remixicon/react";
+import { RiBardFill, RiBardLine, RiGithubFill, RiGoogleFill } from "@remixicon/react";
 
 const Auth = () => {
   const [user, setUser] = useState(null);
-  const [formType, setFormType] = useState("login"); // "login" or "signup"
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // For signup only
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getUser()
@@ -31,29 +19,6 @@ const Auth = () => {
   const handleLogout = async () => {
     await logoutUser();
     setUser(null);
-  };
-
-  const handleAuthSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      if (formType === "signup") {
-        await registerWithEmail(email, password, name);
-        await loginWithEmail(email, password); // Immediately log them in after signup
-      } else {
-        await loginWithEmail(email, password);
-      }
-      const account = await getUser();
-      setUser(account);
-      setEmail("");
-      setPassword("");
-      setName("");
-    } catch (err) {
-      setError(err?.message || "Authentication failed");
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (user) {
@@ -98,76 +63,16 @@ const Auth = () => {
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <button
             onClick={handleGoogleLogin}
-            className="flex items-center gap-3 w-full justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition"
+            className="flex items-center gap-3 w-full sm:w-1/2 justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition"
           >
             <RiGoogleFill />
             Continue with Google
           </button>
-        </div>
-        <div className="flex justify-center gap-6 pt-6">
-          <button
-            className={`px-4 py-2 rounded-xl font-bold ${
-              formType === "login"
-                ? "bg-[#f02e65] text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setFormType("login")}
-          >
-            Login
-          </button>
-          <button
-            className={`px-4 py-2 rounded-xl font-bold ${
-              formType === "signup"
-                ? "bg-[#f02e65] text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setFormType("signup")}
-          >
-            Sign Up
+          <button className="flex items-center gap-3 w-full sm:w-1/2 justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition">
+            <RiGithubFill/>
+            Continue with Github
           </button>
         </div>
-        <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4 pt-4">
-          {formType === "signup" && (
-            <input
-              type="text"
-              required
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2"
-            />
-          )}
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2"
-          />
-          <input
-            type="password"
-            required
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 rounded-xl bg-[#f02e65] text-white font-bold hover:bg-pink-700 transition"
-          >
-            {loading
-              ? "Please wait..."
-              : formType === "signup"
-              ? "Sign Up"
-              : "Log In"}
-          </button>
-        </form>
-        {error && (
-          <div className="text-red-600 font-semibold pt-2">{error}</div>
-        )}
       </div>
     </div>
   );
