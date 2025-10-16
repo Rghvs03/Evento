@@ -3,17 +3,20 @@ import {
   loginWithGoogle,
   logoutUser,
   getUser,
-  sendMagicLink,
+  registerWithEmail,
+  loginWithEmail,
 } from "../services/Auth";
 import { Boxes } from "lucide-react";
-import { RiBardFill, RiGoogleFill } from "@remixicon/react";
+import { RiGoogleFill } from "@remixicon/react";
 
 const Auth = () => {
   const [user, setUser] = useState(null);
-  const [magicEmail, setMagicEmail] = useState("");
-  const [magicSent, setMagicSent] = useState(false);
-  const [magicError, setMagicError] = useState("");
-  const [showMagicForm, setShowMagicForm] = useState(false);
+  const [formType, setFormType] = useState("login"); // "login" or "signup"
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); // For signup only
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getUser()
@@ -30,16 +33,26 @@ const Auth = () => {
     setUser(null);
   };
 
-  const handleMagicLink = async (e) => {
+  const handleAuthSubmit = async (e) => {
     e.preventDefault();
-    setMagicSent(false);
-    setMagicError("");
+    setLoading(true);
+    setError("");
     try {
-      await sendMagicLink(magicEmail);
-      setMagicSent(true);
-      setShowMagicForm(false); // Optional: hide form after sending
+      if (formType === "signup") {
+        await registerWithEmail(email, password, name);
+        await loginWithEmail(email, password); // Immediately log them in after signup
+      } else {
+        await loginWithEmail(email, password);
+      }
+      const account = await getUser();
+      setUser(account);
+      setEmail("");
+      setPassword("");
+      setName("");
     } catch (err) {
-      setMagicError("Magic link send failed. Please check your email.");
+      setError(err?.message || "Authentication failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,44 +98,76 @@ const Auth = () => {
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <button
             onClick={handleGoogleLogin}
-            className="flex items-center gap-3 w-full sm:w-1/2 justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition"
+            className="flex items-center gap-3 w-full justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition"
           >
             <RiGoogleFill />
             Continue with Google
           </button>
+        </div>
+        <div className="flex justify-center gap-6 pt-6">
           <button
-            onClick={() => setShowMagicForm((v) => !v)}
-            className="flex items-center gap-3 w-full sm:w-1/2 justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition"
+            className={`px-4 py-2 rounded-xl font-bold ${
+              formType === "login"
+                ? "bg-[#f02e65] text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+            onClick={() => setFormType("login")}
           >
-            <RiBardFill />
-            Continue with Magic link
+            Login
+          </button>
+          <button
+            className={`px-4 py-2 rounded-xl font-bold ${
+              formType === "signup"
+                ? "bg-[#f02e65] text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+            onClick={() => setFormType("signup")}
+          >
+            Sign Up
           </button>
         </div>
-        {/* Magic Link Form */}
-        {showMagicForm && (
-          <form onSubmit={handleMagicLink} className="flex flex-col gap-2 mt-3">
+        <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4 pt-4">
+          {formType === "signup" && (
             <input
-              type="email"
+              type="text"
               required
-              placeholder="Enter your email"
-              value={magicEmail}
-              onChange={(e) => setMagicEmail(e.target.value)}
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="border border-gray-300 rounded-lg px-4 py-2"
             />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-[#f02e65] text-white hover:bg-pink-700 transition"
-            >
-              Send Magic Link
-            </button>
-          </form>
+          )}
+          <input
+            type="email"
+            required
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2"
+          />
+          <input
+            type="password"
+            required
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 rounded-xl bg-[#f02e65] text-white font-bold hover:bg-pink-700 transition"
+          >
+            {loading
+              ? "Please wait..."
+              : formType === "signup"
+              ? "Sign Up"
+              : "Log In"}
+          </button>
+        </form>
+        {error && (
+          <div className="text-red-600 font-semibold pt-2">{error}</div>
         )}
-        {magicSent && (
-          <span className="mt-2 text-green-600 font-semibold">
-            Check your email for the magic link!
-          </span>
-        )}
-        {magicError && <span className="mt-2 text-red-600">{magicError}</span>}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { account, OAuthProvider } from "./appwrite";
 
-// Production Google OAuth and Magic Link redirect URL
+// Production Google OAuth redirect URL
 const PROD_REDIRECT = "https://evento-orcin.vercel.app/auth-redirect";
 
 // Login with Google (production configuration only)
@@ -12,6 +12,18 @@ export const loginWithGoogle = () => {
   );
 };
 
+// Email/Password Signup
+export const registerWithEmail = (email, password, name = "") => {
+  // Generate a unique userId for each new signup
+  const userId = String(Date.now());
+  return account.create(userId, email, password, name);
+};
+
+// Email/Password Login
+export const loginWithEmail = (email, password) => {
+  return account.createEmailSession(email, password);
+};
+
 // Logout user
 export const logoutUser = () => {
   return account.deleteSession("current");
@@ -20,11 +32,4 @@ export const logoutUser = () => {
 // Get current user details
 export const getUser = () => {
   return account.get();
-};
-
-// **NEW**: Send Magic Link for login
-export const sendMagicLink = (email) => {
-  // Use a unique session ID, e.g. current timestamp
-  const sessionId = String(Date.now());
-  return account.createMagicURLSession(sessionId, email, PROD_REDIRECT);
 };
