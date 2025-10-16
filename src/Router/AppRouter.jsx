@@ -6,6 +6,7 @@ import Event from "../Pages/Event";
 import EventDetails from "../Pages/EventDetails";
 import Auth from "../Pages/Auth";
 import AuthRedirect from "../Pages/AuthRedirect"; // <-- Import the new page
+import UserDashboard from "../Pages/UserDashboard";
 
 const AppRouter = () => {
   return (
@@ -15,6 +16,7 @@ const AppRouter = () => {
       <Route path="/auth-redirect" element={<AuthRedirect />} />
 
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/user/dashboard" element={<UserDashboard />} />
 
       <Route path="/events" element={<Event />} />
       <Route path="/events/:id" element={<EventDetails />} />
