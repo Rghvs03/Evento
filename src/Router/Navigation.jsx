@@ -1,12 +1,15 @@
 import { Boxes, Menu, X } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router";
-import { account } from "../services/appwrite"; // Adjust import as needed
+import { account } from "../services/appwrite";
 
-const Navigation = ({ user, setUser }) => {
+// ADD isAdmin prop here!
+const Navigation = ({ user, setUser, isAdmin }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const dashboardPath = isAdmin ? "/admin/dashboard" : "/user/dashboard"; // Dynamically determine route
 
   const handleHomeClick = async () => {
     if (user) {
@@ -43,8 +46,10 @@ const Navigation = ({ user, setUser }) => {
         >
           {user ? "Logout" : "Home"}
         </button>
+
+        {/* Updated Dashboard route logic */}
         <NavLink
-          to="/admin"
+          to={dashboardPath}
           className={({ isActive }) =>
             isActive
               ? "text-[#f02e65] border-b-2 border-[#f02e65] pb-1 px-1 transition-all"
@@ -53,6 +58,7 @@ const Navigation = ({ user, setUser }) => {
         >
           Dashboard
         </NavLink>
+
         <NavLink
           to="/events"
           className={({ isActive }) =>
@@ -87,7 +93,7 @@ const Navigation = ({ user, setUser }) => {
             {user ? "Logout" : "Home"}
           </button>
           <NavLink
-            to="/admin"
+            to={dashboardPath}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
               isActive
