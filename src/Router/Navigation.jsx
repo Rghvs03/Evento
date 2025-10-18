@@ -1,9 +1,28 @@
 import { Boxes, Menu, X } from "lucide-react";
 import React, { useState } from "react";
-import { NavLink } from "react-router";
+import { useNavigate, useLocation, NavLink } from "react-router";
+import { account } from "../services/appwrite";
 
-const Navigation = () => {
+// ADD isAdmin prop here!
+const Navigation = ({ user, setUser, isAdmin }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const dashboardPath = isAdmin ? "/admin/dashboard" : "/user/dashboard"; // Dynamically determine route
+
+  const handleHomeClick = async () => {
+    if (user) {
+      try {
+        await account.deleteSession("current");
+        setUser(null);
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
+    }
+    navigate("/");
+    setOpen(false); // closes mobile menu if open
+  };
 
   return (
     <nav className="flex justify-between items-center px-6 sm:px-12 py-3 bg-white text-black shadow-md shadow-gray-300 sticky top-0 z-50">
@@ -17,19 +36,20 @@ const Navigation = () => {
 
       {/* Desktop Links */}
       <div className="hidden md:flex gap-10 text-lg font-semibold font-sans">
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) =>
-            isActive
+        <button
+          onClick={handleHomeClick}
+          className={`${
+            location.pathname === "/"
               ? "text-[#f02e65] border-b-2 border-[#f02e65] pb-1 px-1 transition-all"
               : "hover:text-[#f02e65] transition-all"
-          }
+          }`}
         >
-          Home
-        </NavLink>
+          {user ? "Logout" : "Home"}
+        </button>
+
+        {/* Updated Dashboard route logic */}
         <NavLink
-          to="/admin"
+          to={dashboardPath}
           className={({ isActive }) =>
             isActive
               ? "text-[#f02e65] border-b-2 border-[#f02e65] pb-1 px-1 transition-all"
@@ -38,6 +58,7 @@ const Navigation = () => {
         >
           Dashboard
         </NavLink>
+
         <NavLink
           to="/events"
           className={({ isActive }) =>
@@ -61,20 +82,18 @@ const Navigation = () => {
       {/* Mobile Menu */}
       {open && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-lg flex flex-col items-center gap-5 py-5 text-lg font-semibold font-sans md:hidden">
-          <NavLink
-            to="/"
-            end
-            onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              isActive
+          <button
+            onClick={handleHomeClick}
+            className={`${
+              location.pathname === "/"
                 ? "text-[#f02e65] border-b-2 border-[#f02e65] pb-1"
                 : "hover:text-[#f02e65]"
-            }
+            }`}
           >
-            Home
-          </NavLink>
+            {user ? "Logout" : "Home"}
+          </button>
           <NavLink
-            to="/admin"
+            to={dashboardPath}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
               isActive

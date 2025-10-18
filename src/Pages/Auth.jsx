@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { loginWithGoogle, logoutUser, getUser } from "../services/Auth";
 import { Boxes } from "lucide-react";
-import { RiBardFill, RiBardLine, RiGoogleFill } from "@remixicon/react";
+import { RiBardFill, RiBardLine, RiGithubFill, RiGoogleFill } from "@remixicon/react";
 
 const Auth = () => {
   const [user, setUser] = useState(null);
@@ -69,8 +69,8 @@ const Auth = () => {
             Continue with Google
           </button>
           <button className="flex items-center gap-3 w-full sm:w-1/2 justify-center px-4 py-2.5 rounded-xl bg-white border-2 border-[#f02e65] shadow text-gray-800 font-large text-lg focus:outline-none hover:border-pink-600 transition">
-            <RiBardFill />
-            Continue with Magic link
+            <RiGithubFill/>
+            Continue with Github
           </button>
         </div>
       </div>
