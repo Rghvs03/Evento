@@ -20,6 +20,7 @@ const Auth = () => {
     await logoutUser();
     setUser(null);
   };
+  
 
   if (user) {
     return (
