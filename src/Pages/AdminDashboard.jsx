@@ -255,7 +255,7 @@ const AdminDashboard = () => {
                       value={eventData.price}
                       onChange={handleEventInput}
                       placeholder="Price (₹)"
-                      className="border-2 border-[#f02e65] outline-none ml-2 px-3 rounded-xl w-50"
+                      className="border-2 border-[#f02e65] outline-none ml-2 px-3 rounded-xl w-30"
                     />
                   )}
                 </div>
