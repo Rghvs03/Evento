@@ -45,7 +45,7 @@ const UserDashboard = () => {
           fill="none"
           className="mb-6"
         >
-          ircle cx="30" cy="30" r="28" fillll="#ffebf1"/>
+          <circle cx="30" cy="30" r="28" fill="#ffebf1" />
           <ellipse
             cx="30"
             cy="22"
